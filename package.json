@@ -1,0 +1,13 @@
+{
+  "name": "swagger-toolbox",
+  "version": "1.0.0",
+  "description": "Tool to extract method, path, and operationId from Swagger/OpenAPI 3.0 JSON and write to CSV.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {}
+}

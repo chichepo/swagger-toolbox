@@ -1,0 +1,41 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+ 
+# Logs
+logs
+*.log
+*.csv
+*.out
+*.pid
+*.gz
+ 
+# Environment
+.env
+.env.*
+ 
+# Output folders
+output/
+coverage/
+dist/
+build/
+ 
+# OS
+.DS_Store
+Thumbs.db
+ 
+# IDEs
+.vscode/
+.idea/
+*.sw?
+*.sublime*
+ 
+# Swagger temporary files (if you create any)
+*.bak
+*.tmp
+*.orig
+ 
+# SwaggerHub sync files (optional)
+.swaggerhub/
