@@ -62,11 +62,11 @@ module.exports = class PreProcValidatDict {
     this.user = user;
   }
 
-  extractMapperHostPrefix(xmap, serverVariablesData) {
+  extractMapperHostPrefix(xmapEntry, serverVariablesData) {
     for (const prefixKey of Object.keys(serverVariablesData)) {
       const testPrefix = prefixKey + ".";
-      if (xmap.startsWith(testPrefix)) {
-        const cleanPath = xmap.substring(testPrefix.length);
+      if (xmapEntry.startsWith(testPrefix)) {
+        const cleanPath = xmapEntry.substring(testPrefix.length);
         return { matchedPrefix: prefixKey, cleanPath };
       }
     }
@@ -76,7 +76,6 @@ module.exports = class PreProcValidatDict {
   async validate(dictJson, hostsData, serverVariablesData) {
     let retVal = { isErr: false, errors: [] };
 
-    // Fatal checks
     if (!dictJson?.components?.schemas) {
       const message = "Missing dictJson.components.schemas";
       console.error(`[FATAL] ${message}`);
@@ -86,16 +85,7 @@ module.exports = class PreProcValidatDict {
     }
 
     const serverBlock = dictJson?.servers?.[0];
-    if (!serverBlock) {
-      const message = "Missing dictJson.servers[0]";
-      console.error(`[FATAL] ${message}`);
-      retVal.isErr = true;
-      retVal.errorMsg = message;
-      return retVal;
-    }
-
-    const serverVars = serverBlock.variables;
-    if (!serverVars) {
+    if (!serverBlock?.variables) {
       const message = "Missing server variables in dictJson.servers[0].variables";
       console.error(`[FATAL] ${message}`);
       retVal.isErr = true;
@@ -103,10 +93,12 @@ module.exports = class PreProcValidatDict {
       return retVal;
     }
 
-    const hostKeys = Object.keys(serverBlock).filter(k => k.startsWith("x-origin-host"));
-    const pathLookups = {};
+    const validHostKeys = Object.keys(serverBlock).filter(k =>
+      /^x-origin(-smf|-sm|-hbs)?-host\d*$/.test(k) || k === "x-origin-host"
+    );
 
-    for (const key of hostKeys) {
+    const pathLookups = {};
+    for (const key of validHostKeys) {
       const url = serverBlock[key];
       const hostData = hostsData.find(h => h.url === url);
       if (!hostData) {
@@ -117,7 +109,7 @@ module.exports = class PreProcValidatDict {
         return retVal;
       }
 
-      const explorer = new SwaggerLookupPathExplorer(hostData.json, key);
+      const explorer = new SwaggerLookupPathExplorer(hostData.json, "x-origin-host");
       explorer.extractPropertyPaths();
       pathLookups[url] = explorer;
     }
@@ -129,40 +121,43 @@ module.exports = class PreProcValidatDict {
         const xmap = propDef["x-mapper-host"];
         if (!xmap) continue;
 
-        const { matchedPrefix, cleanPath } = this.extractMapperHostPrefix(xmap, serverVariablesData);
-        if (!matchedPrefix) {
-          const msg = `In '${schemaName}.${propName}', unknown prefix in x-mapper-host: '${xmap}'`;
-          console.error(msg);
-          retVal.errors.push(msg);
-          retVal.isErr = true;
-          continue;
-        }
+        const xmapList = xmap.split(",").map(s => s.trim());
+        for (const xmapEntry of xmapList) {
+          const { matchedPrefix, cleanPath } = this.extractMapperHostPrefix(xmapEntry, serverVariablesData);
+          if (!matchedPrefix) {
+            const msg = `In '${schemaName}.${propName}', unknown prefix in x-mapper-host: '${xmapEntry}'`;
+            console.error(msg);
+            retVal.errors.push(msg);
+            retVal.isErr = true;
+            continue;
+          }
 
-        const variableMeta = serverVars[matchedPrefix];
-        if (!variableMeta || !variableMeta.default) {
-          const msg = `In '${schemaName}.${propName}', missing .default for variable '${matchedPrefix}'`;
-          console.error(msg);
-          retVal.errors.push(msg);
-          retVal.isErr = true;
-          continue;
-        }
+          const variableMeta = serverBlock.variables[matchedPrefix];
+          if (!variableMeta || !variableMeta.default) {
+            const msg = `In '${schemaName}.${propName}', missing .default for variable '${matchedPrefix}'`;
+            console.error(msg);
+            retVal.errors.push(msg);
+            retVal.isErr = true;
+            continue;
+          }
 
-        const targetUrl = variableMeta.default;
-        const explorer = pathLookups[targetUrl];
-        if (!explorer) {
-          const msg = `In '${schemaName}.${propName}', Swagger not loaded for URL '${targetUrl}'`;
-          console.error(msg);
-          retVal.errors.push(msg);
-          retVal.isErr = true;
-          continue;
-        }
+          const targetUrl = variableMeta.default;
+          const explorer = pathLookups[targetUrl];
+          if (!explorer) {
+            const msg = `In '${schemaName}.${propName}', Swagger not loaded for URL '${targetUrl}'`;
+            console.error(msg);
+            retVal.errors.push(msg);
+            retVal.isErr = true;
+            continue;
+          }
 
-        const fullPath = cleanPath;
-        if (!explorer.hasPath(fullPath)) {
-          const msg = `In '${schemaName}.${propName}', bad value for x-mapper-host: '${xmap}'`;
-          console.error(msg);
-          retVal.errors.push(msg);
-          retVal.isErr = true;
+          const fullPath = cleanPath;
+          if (!explorer.hasPath(fullPath)) {
+            const msg = `In '${schemaName}.${propName}', bad value for x-mapper-host: '${xmapEntry}'`;
+            console.error(msg);
+            retVal.errors.push(msg);
+            retVal.isErr = true;
+          }
         }
       }
     }
