@@ -24,7 +24,7 @@
       "x-origin-host1": "pet.json",
       "x-origin-host2": "store.json",
       "variables": {
-        "var-pet.var": {
+        "smf-pet.smf": {
           "description": "my pet file",
           "default": "pet.json"
         },
@@ -822,7 +822,7 @@
             "type" : "string",
             "description" : "Order Status",
             "enum" : [ "placed", "approved", "delivered" ],
-            "x-mapper-host" : "var-pet.var.petUpdatePetWithForm.requestBody.InlineObject.status"
+            "x-mapper-host" : "smf-pet.smf.petUpdatePetWithForm.requestBody.InlineObject.status"
           },
           "complete" : {
             "type" : "boolean",
@@ -842,7 +842,7 @@
           },
           "name" : {
             "type" : "string",
-            "x-mapper-host" : "var-pet.var.petUpdatePetWithForm.requestBody.InlineObject.name"
+            "x-mapper-host" : "smf-pet.smf.petUpdatePetWithForm.requestBody.InlineObject.name"
           }
         },
         "xml" : {
@@ -893,7 +893,7 @@
           },
           "name" : {
             "type" : "string",
-            "x-mapper-host" : "var-pet.var.petUpdatePetWithForm.requestBody.InlineObject.name"
+            "x-mapper-host" : "smf-pet.smf.petUpdatePetWithForm.requestBody.InlineObject.name"
           }
         },
         "xml" : {
@@ -917,7 +917,7 @@
           "name" : {
             "type" : "string",
             "example" : "doggie",
-            "x-mapper-host" : "var-pet.var.petUpdatePetWithForm.requestBody.InlineObject.name"
+            "x-mapper-host" : "smf-pet.smf.petUpdatePetWithForm.requestBody.InlineObject.name"
           },
           "photoUrls" : {
             "type" : "array",
@@ -944,7 +944,7 @@
             "type" : "string",
             "description" : "pet status in the store",
             "enum" : [ "available", "pending", "sold" ],
-            "x-mapper-host" : "var-pet.var.petUpdatePetWithForm.requestBody.InlineObject.status"
+            "x-mapper-host" : "smf-pet.smf.petUpdatePetWithForm.requestBody.InlineObject.status"
           }
         },
         "xml" : {

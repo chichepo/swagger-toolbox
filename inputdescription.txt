@@ -1,0 +1,84 @@
+and this is the description of each input variable of the function "validate"
+
+1 - dictJson:
+This variable contains a serialized OPENAPI3 swagger document as illustrated in the following:
+See the chaper 4 for explanation about how the dictionnay swagger file is structured (dictJson)
+    dictJson = {here a serialized openapi 3 swagger documentation}
+
+2 - hostsData:
+This variable contains an array of multiple structures that contains a sub level of variables as illustrated in the following array with 3 records:
+    
+    hostsData = (3) [{...}, {...}, {...}]
+        0 = {url: 'https://swaggerhub.dev.com/MyDom/MySwagger1/1.0.0', key: 'x-origin-host1', json: {...}}
+            json = {here an openapi 3 swagger documentation}
+            key = 'x-origin-host1'
+            url: 'https://swaggerhub.dev.com/MyDom/MySwagger1/1.0.0'
+        2 = {url: 'https://swaggerhub.dev.com/MyDom/MySwagger2/1.0.0', key: 'x-origin-host2', json: {...}}
+            json = {here an openapi 3 swagger documentation}
+            key = 'x-origin-host2'
+            url: 'https://swaggerhub.dev.com/MyDom/MySwagger2/1.0.0'
+        3 = {url: 'https://swaggerhub.dev.com/MyDom/MySwagger3/1.0.0', key: 'x-origin-host3', json: {...}}
+            json = {here an openapi 3 swagger documentation}
+            key = 'x-origin-host3'
+            url: 'https://swaggerhub.dev.com/MyDom/MySwagger3/1.0.0'
+
+3 - serverVariablesData:
+This variable contains a structure that may contain multiple sub structures (according to the number of sub level of variables of hostsData) like in the following example:
+
+    serverVariablesData = {smf-variable1.smf: {...}, smf-variable2.smf: {...}, smf-variable3.smf: {...}}
+        smf-variable1.smf = {here a serialized openapi 3 swagger documentation}
+        smf-variable2.smf = {here an another serialized openapi 3 swagger documentation}
+        smf-variable3.smf = {here a serialized openapi 3 swagger documentation}
+
+4 - Description of the The dictionnary swagger file structure:
+The dictionnary swagger is a regular openapi3 swagger Documentation that contains methods, parameters, Headers, object, properties Etc.
+
+4.1 - External host Swagger declaration:
+    For logical reasons we need to map properties, within the objects, to an external "host" openapi3 swagger documentation that contains the same properties but may have different names.Description
+
+    So first, we declare the external "host" openapi3 swagger documentations URL by using the key "x-origin-host<some index>"
+
+4.2 - External host swagger variables declaration:
+    Then we declare corresponding variables that will be used to indentify the corresponding host documentation: "hbs-<some name>.hbs" or "smf-<some name>.smf" or "sm-<some name>.sm"
+
+For example:
+    "url": "http://petstore.swagger.io/v2",
+      "description": "The main swagger file",
+      "x-origin-host1": "https://swaggerhub.dev.com/MyDom/Pet/1.0.0",
+      "x-origin-host2": "https://swaggerhub.dev.com/MyDom/Store/1.0.0",
+      "variables": {
+        "smf-pet.smf": {
+          "description": "my pet file",
+          "default": "https://swaggerhub.dev.com/MyDom/Pet/1.0.0"
+        },
+        "hbs-store.hbs": {
+          "description": "my store file",
+          "default": "https://swaggerhub.dev.com/MyDom/Store/1.0.0"
+        }
+      }
+    } ],
+
+4.3 - External host swagger exploration path:
+    In the meanwhile, we have a utility that parse the External host swagger json structure and provide
+    the exploratory path of a given property within the swagger structure.
+
+    For example:
+        petUpdatePetWithForm.requestBody.InlineObject.date
+        or
+        petUpdatePetWithForm.requestBody.InlineObject.status
+        etc.
+
+4.4 - dictionnary swagger file property map to External host swagger property:
+    Since we need to map dictionnary swagger file property to External host swagger property and since it may exists more than one extenal host swagger, we use the variables to specify from which External host swagger the mapping path is originated
+
+    For example:
+        "quantity" : {
+            "type" : "integer",
+            "format" : "int32",
+            "x-mapper-host" : "hbs-store.hbs.storePlaceOrder.responses.storeOrder.qty"
+          },
+        "shipDate" : {
+            "type" : "string",
+            "format" : "date-time",
+            "x-mapper-host" : "smf-pet.smf.petUpdatePetWithForm.requestBody.InlineObject.date"
+          },
