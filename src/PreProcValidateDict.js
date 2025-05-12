@@ -93,10 +93,12 @@ module.exports = class PreProcValidatDict {
       return retVal;
     }
 
-    const hostKeys = Object.keys(serverBlock).filter(k => k.startsWith("x-origin-host"));
-    const pathLookups = {};
+    const validHostKeys = Object.keys(serverBlock).filter(k =>
+      /^x-origin(-smf|-sm|-hbs)?-host\d*$/.test(k) || k === "x-origin-host"
+    );
 
-    for (const key of hostKeys) {
+    const pathLookups = {};
+    for (const key of validHostKeys) {
       const url = serverBlock[key];
       const hostData = hostsData.find(h => h.url === url);
       if (!hostData) {
@@ -107,7 +109,7 @@ module.exports = class PreProcValidatDict {
         return retVal;
       }
 
-      const explorer = new SwaggerLookupPathExplorer(hostData.json, key);
+      const explorer = new SwaggerLookupPathExplorer(hostData.json, "x-origin-host");
       explorer.extractPropertyPaths();
       pathLookups[url] = explorer;
     }
